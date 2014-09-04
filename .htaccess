@@ -1,0 +1,7 @@
+AddDefaultCharset utf-8
+Redirect /br44.html https://play.google.com/store/apps/details?id=com.its.rto
+Redirect /br45.html http://taxi-leader.ru/1
+Redirect /javamobile.html http://taxi-leader.ru/1
+Redirect /1 http://taxi-leader.ru/1
+Redirect /br43.html http://itunes.apple.com/ru/app/rutaxi-onlajn/id506360097?mt=8
+Redirect /br49.html http://www.windowsphone.com/en-us/store/app/rutaxi-%D0%BE%D0%BD%D0%BB%D0%B0%D0%B9%D0%BD/aecec049-4d83-4cbd-ab09-28b60137da5b

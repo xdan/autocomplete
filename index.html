@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<!--<base href="" /><!-- -->
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+<title>jQuery Automplite Plugin</title>
+</head>
+<body>
+<input style="padding:4px 6px; height:25px;line-height:25px;" id="auto1" type="text"><button id="open" class="icon-arrow-down">open</button>
+<br>
+<input style="border:3px solid #ccc;" id="auto2" type="text">
+<br>
+Cars:<input style="padding:10px; width:300px; font-size:1.3em;" id="auto3" type="text">
+<br>
+Street:<input id="auto4" type="text" placeholder="Yo">
+</body>
+<script src="http://api-maps.yandex.ru/2.0-stable/?load=package.full&lang=ru-RU" type="text/javascript"></script>
+<script src="jquery.js" type="text/javascript"></script>
+<link rel="stylesheet" href="jquery.autocomplete.css">
+<script src="jquery.autocomplete.js" type="text/javascript"></script>
+<script>
+var states = [
+	'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California',
+	'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii',
+	'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana',
+	'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota',
+	'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire',
+	'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota',
+	'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island',
+	'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont',
+	'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
+];
+
+$('#auto1').autocomplete({
+	sources:[states]
+});
+
+$('#open').click(function(){
+	$('#auto1').trigger('open');
+	$('#auto1').focus();
+});
+
+$('#auto2').autocomplete({
+	sources:[{
+		data:['ab','ba','cccc'],
+		preparse:function(items,query,sourse){
+			for(i in items)
+				items[i]=items[i].replace('a','b');
+			return items;
+		},
+		filter:function(items,query){
+			var res = [];
+			for(i in items){
+				if( items[i]==query )
+					res.push(items[i]);
+			}
+			return res;
+		}
+	}]
+});
+$('#auto3').autocomplete({
+valueKey:'title',
+sources:[{
+	url:"/test.php?query=%QUERY%",
+	type:'remote',
+	getValueFromItem:function(item){
+		return item.title
+	}
+}]});
+
+$('#auto4').autocomplete({
+	sources:function(req,add){
+		if( req=='' )
+			return;
+		var options = this;
+		$.getJSON("http://geocode-maps.yandex.ru/1.x/?callback=?&format=json&geocode="+encodeURIComponent(req), function(data) {  
+			var suggestions = [];
+			$.each(data.response.GeoObjectCollection.featureMember, function(i, val){  
+				suggestions.push(val.GeoObject.metaDataProperty.GeocoderMetaData.text.toLowerCase());  
+			});  
+			add(suggestions);
+		});  
+	},
+	valid:function(value,query){
+		return true
+	},
+	findRight:function(items){
+		return items[0]?items[0]:false;
+	},
+	
+	dropdownWidth:'auto'
+});
+
+</script>
+</html>
