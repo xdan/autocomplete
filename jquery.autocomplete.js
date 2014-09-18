@@ -482,7 +482,11 @@ function init( that,options ){
 		currentSelect = '',
 		active = null,
 		pos = 0;
-		
+	
+	console.log(getComputedStyle(that).display)
+	$box
+		.css('display',$(that).css('display'));
+	
 	if( options.style )
 		$box.css(options.style);
 		
