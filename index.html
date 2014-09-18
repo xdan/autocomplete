@@ -42,7 +42,7 @@ $('#open').click(function(){
 
 $('#auto2').autocomplete({
 	sources:[{
-		data:['ab','ba','cccc'],
+		data:states,
 		preparse:function(items,query,sourse){
 			for(i in items)
 				items[i]=items[i].replace('a','b');
