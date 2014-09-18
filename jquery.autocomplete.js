@@ -483,9 +483,12 @@ function init( that,options ){
 		active = null,
 		pos = 0;
 	
-	console.log(getComputedStyle(that).display)
+	
 	$box
-		.css('display',$(that).css('display'));
+		.css({
+			'display':$(that).css('display'),
+			'width':$(that).css('width')
+		});
 	
 	if( options.style )
 		$box.css(options.style);
