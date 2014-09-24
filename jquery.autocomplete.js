@@ -1,8 +1,87 @@
+/**
+ * @preserve jQuery Autocomplete plugin v1.0.0
+ * @homepage http://xdsoft.net/jqplugins/autocomplete/
+ * (c) 2014, Chupurnov Valeriy <chupurnov@gmail.com>
+ */
+!('getComputedStyle' in this) && (this.getComputedStyle = (function () {
+	function getPixelSize(element, style, property, fontSize) {
+		var
+		sizeWithSuffix = style[property],
+		size = parseFloat(sizeWithSuffix),
+		suffix = sizeWithSuffix.split(/\d/)[0],
+		rootSize;
+
+		fontSize = fontSize != null ? fontSize : /%|em/.test(suffix) && element.parentElement ? getPixelSize(element.parentElement, element.parentElement.currentStyle, 'fontSize', null) : 16;
+		rootSize = property == 'fontSize' ? fontSize : /width/i.test(property) ? element.clientWidth : element.clientHeight;
+
+		return (suffix == 'em') ? size * fontSize : (suffix == 'in') ? size * 96 : (suffix == 'pt') ? size * 96 / 72 : (suffix == '%') ? size / 100 * rootSize : size;
+	}
+
+	function setShortStyleProperty(style, property) {
+		var
+		borderSuffix = property == 'border' ? 'Width' : '',
+		t = property + 'Top' + borderSuffix,
+		r = property + 'Right' + borderSuffix,
+		b = property + 'Bottom' + borderSuffix,
+		l = property + 'Left' + borderSuffix;
+
+		style[property] = (style[t] == style[r] == style[b] == style[l] ? [style[t]]
+		: style[t] == style[b] && style[l] == style[r] ? [style[t], style[r]]
+		: style[l] == style[r] ? [style[t], style[r], style[b]]
+		: [style[t], style[r], style[b], style[l]]).join(' ');
+	}
+
+	function CSSStyleDeclaration(element) {
+		var
+		currentStyle = element.currentStyle,
+		style = this,
+		fontSize = getPixelSize(element, currentStyle, 'fontSize', null);
+
+		for (property in currentStyle) {
+			if (/width|height|margin.|padding.|border.+W/.test(property) && style[property] !== 'auto') {
+				style[property] = getPixelSize(element, currentStyle, property, fontSize) + 'px';
+			} else if (property === 'styleFloat') {
+				style['float'] = currentStyle[property];
+			} else {
+				style[property] = currentStyle[property];
+			}
+		}
+
+		setShortStyleProperty(style, 'margin');
+		setShortStyleProperty(style, 'padding');
+		setShortStyleProperty(style, 'border');
+
+		style.fontSize = fontSize + 'px';
+
+		return style;
+	}
+
+	CSSStyleDeclaration.prototype = {
+		constructor: CSSStyleDeclaration,
+		getPropertyPriority: function () {},
+		getPropertyValue: function ( prop ) {
+			return this[prop] || '';
+		},
+		item: function () {},
+		removeProperty: function () {},
+		setProperty: function () {},
+		getPropertyCSSValue: function () {}
+	};
+
+	function getComputedStyle(element) {
+		return new CSSStyleDeclaration(element);
+	}
+
+	return getComputedStyle;
+})(this));
+
+
 !function($){
+
 var 
 	ARROWLEFT = 37,
-	ARROWUP = 38,
 	ARROWRIGHT = 39,
+	ARROWUP = 38,
 	ARROWDOWN = 40,
 	TAB = 9,
 	CTRLKEY = 17,
@@ -16,6 +95,9 @@ var
 	VKEY = 86,
 	ZKEY = 90,
 	YKEY = 89,
+	
+	//specialKeys = [ARROWLEFT,ARROWLEFT,ARROWRIGHT,ARROWDOWN,TAB,CTRLKEY,SHIFTKEY,DEL,ENTER,ESC,BACKSPACE],
+	
 	defaultSetting = {
 		valueKey:'value',
 		titleKey:'title',
@@ -119,88 +201,15 @@ var
 		
 		source:[]
 	},
+	
 	currentInput = false,
 	ctrlDown = false,
 	shiftDown = false;
-	
-// getComputedStyle
-!('getComputedStyle' in this) && (this.getComputedStyle = (function () {
-	function getPixelSize(element, style, property, fontSize) {
-		var
-		sizeWithSuffix = style[property],
-		size = parseFloat(sizeWithSuffix),
-		suffix = sizeWithSuffix.split(/\d/)[0],
-		rootSize;
-
-		fontSize = fontSize != null ? fontSize : /%|em/.test(suffix) && element.parentElement ? getPixelSize(element.parentElement, element.parentElement.currentStyle, 'fontSize', null) : 16;
-		rootSize = property == 'fontSize' ? fontSize : /width/i.test(property) ? element.clientWidth : element.clientHeight;
-
-		return (suffix == 'em') ? size * fontSize : (suffix == 'in') ? size * 96 : (suffix == 'pt') ? size * 96 / 72 : (suffix == '%') ? size / 100 * rootSize : size;
-	}
-
-	function setShortStyleProperty(style, property) {
-		var
-		borderSuffix = property == 'border' ? 'Width' : '',
-		t = property + 'Top' + borderSuffix,
-		r = property + 'Right' + borderSuffix,
-		b = property + 'Bottom' + borderSuffix,
-		l = property + 'Left' + borderSuffix;
-
-		style[property] = (style[t] == style[r] == style[b] == style[l] ? [style[t]]
-		: style[t] == style[b] && style[l] == style[r] ? [style[t], style[r]]
-		: style[l] == style[r] ? [style[t], style[r], style[b]]
-		: [style[t], style[r], style[b], style[l]]).join(' ');
-	}
-
-	function CSSStyleDeclaration(element) {
-		var
-		currentStyle = element.currentStyle,
-		style = this,
-		fontSize = getPixelSize(element, currentStyle, 'fontSize', null);
-
-		for (property in currentStyle) {
-			if (/width|height|margin.|padding.|border.+W/.test(property) && style[property] !== 'auto') {
-				style[property] = getPixelSize(element, currentStyle, property, fontSize) + 'px';
-			} else if (property === 'styleFloat') {
-				style['float'] = currentStyle[property];
-			} else {
-				style[property] = currentStyle[property];
-			}
-		}
-
-		setShortStyleProperty(style, 'margin');
-		setShortStyleProperty(style, 'padding');
-		setShortStyleProperty(style, 'border');
-
-		style.fontSize = fontSize + 'px';
-
-		return style;
-	}
-
-	CSSStyleDeclaration.prototype = {
-		constructor: CSSStyleDeclaration,
-		getPropertyPriority: function () {},
-		getPropertyValue: function ( prop ) {
-			return this[prop] || '';
-		},
-		item: function () {},
-		removeProperty: function () {},
-		setProperty: function () {},
-		getPropertyCSSValue: function () {}
-	};
-
-	function getComputedStyle(element) {
-		return new CSSStyleDeclaration(element);
-	}
-
-	return getComputedStyle;
-})(this));	
-
+/*
 $(window).on('mousedown',function(){
-	if( currentInput ){
-		currentInput.trigger('close.xdsoft');
-	}
-});
+	$(window)
+		.trigger('close.xdsoft');
+});*/
 
 $(document)
 	.on('keydown.xdsoftctrl',function(e) {
@@ -245,7 +254,6 @@ function setCaretPosition( input, pos ){
 function isset( value ){
 	return typeof(value)!=='undefined';
 };
-
 
 function safe_call( callback,args,callback2,defaultValue ){
 	if( isset(callback) && !$.isArray(callback) ){
@@ -451,6 +459,7 @@ function getItem( $div,dataset ){
 
 function getValue( $div,dataset ){
 	var item = getItem($div,dataset);
+	
 	if( item ){
 		return __safe.call(this,
 			'getValue',$div.data('source'),
@@ -465,6 +474,7 @@ function getValue( $div,dataset ){
 	}
 };
 
+
 function init( that,options ){
 	if( $(that).hasClass('xdsoft_input') )
 			return;
@@ -472,11 +482,10 @@ function init( that,options ){
 	var $box = $('<div class="xdsoft_autocomplete"></div>'),
 		$dropdown = $('<div class="xdsoft_autocomplete_dropdown"></div>'),
 		$hint = $('<span class="xdsoft_autocomplete_hint"></span>'),
-		$copyright = $('<a href="http://xdsoft.net/autocomplete/" class="xdsoft_autocomplete_copyright">xdsoft.net</a>'),
 		$input = $(that),
 		timer1 = 0,
 		dataset = [],
-		opened = false,
+		iOpen	= false,
 		value = '',
 		currentValue = '',
 		currentSelect = '',
@@ -496,10 +505,6 @@ function init( that,options ){
 	$input
 		.addClass('xdsoft_input')
 		.attr('autocomplete','off');
-
-	$copyright.on('mousedown',function(event){
-		event.stopPropagation();
-	});
 	
 	$dropdown
 		.on('mousemove','div',function(){
@@ -515,7 +520,116 @@ function init( that,options ){
 		})
 	
 	
+	function manageData(){
+		if( $input.val()!=currentValue ){
+			currentValue = $input.val();
+		}else
+			return;
+			
+		collectData.call(options, currentValue,function( data,query ){
+			if( query != currentValue )
+				return;
+			dataset = processData.call(options,data,query);
+			
+			$input.trigger('updateContent.xdsoft');
+			
+			if( options.showHint && currentValue.length && currentValue.length<=$input.prop('size') && (right = findRight.call(options,dataset,currentValue))  ){
+				var title 	=  __safe.call(options,'getTitle',right.source,[right.right,right.source]);
+				title = '<span>'+query+'</span>'+title.substr(query.length);
+				$hint.html( title );
+			}else{
+				$hint.html('');
+			}
+		});
+
+		return;
+	}
+	function manageKey( event ){
+		var key = event.which;
 		
+		switch( key ){
+			case AKEY: case CKEY: case VKEY: case ZKEY: case YKEY:
+				if( event.shiftKey || event.ctrlKey )
+					return true;
+			break;
+			case SHIFTKEY:	
+			case CTRLKEY:
+				return true;
+			break;
+			case ARROWRIGHT:	
+			case ARROWLEFT:
+				if( ctrlDown || shiftDown || event.shiftKey || event.ctrlKey )
+					return true;
+				value = $input.val();
+				pos = getCaretPosition($input[0]);
+				if( key == ARROWRIGHT && pos==value.length ){
+					if( right = findRight.call(options,dataset,value) ){
+						$input.trigger('pick.xdsoft',[
+							__safe.call(options,
+								'getValue',right.source,
+								[right.right,right.source]
+							)
+						]);
+					}else
+						$input.trigger('pick.xdsoft');
+					event.preventDefault();
+					return false;
+				}
+				return true;
+			break;
+			case TAB:
+			return true;
+			case ENTER:
+				if( iOpen ){
+					$input.trigger('pick.xdsoft');
+					event.preventDefault();
+					return false;
+				}else
+					return true;
+			break;
+			case ESC:
+				$input
+					.val(currentValue)
+					.trigger('close.xdsoft');
+				event.preventDefault();
+				return false;
+			break;
+			case ARROWDOWN:
+			case ARROWUP:
+				if( !iOpen ){
+					$input.trigger('updateContent.xdsoft');
+					$input.trigger('open.xdsoft');
+					event.preventDefault();
+					return false;
+				}
+				
+				active = $dropdown.find('div.active');
+				
+				var next = key==ARROWDOWN?'next':'prev', timepick = true;
+				
+				if( active.length ){
+					active.removeClass('active');
+					if( active[next]().length ){
+						active[next]().addClass('active');
+					}else{
+						$input.val(currentValue);
+						timepick = false;
+					}
+				}else{
+					$dropdown.children().eq(key==ARROWDOWN?0:-1).addClass('active');
+				}
+				
+				if( timepick ){
+					$input.trigger('timepick.xdsoft');
+				}
+				
+				event.preventDefault();
+				return false;
+			break;	
+
+		}
+		return;
+	}
 	
 	$input
 		.data('xdsoft_autocomplete',dataset)
@@ -556,109 +670,19 @@ function init( that,options ){
 				setCaretPosition($input[0],$input.val().length);
 			}
 		})
-		.on('keydown.xdsoft', function( event ){
-			var key = event.which;
+		.on('keydown.xdsoft keypress.xdsoft input.xdsoft cut.xdsoft paste.xdsoft', function( event ){
+			var ret = manageKey(event);
 			
-			switch( key ){
-				case AKEY: case CKEY: case VKEY: case ZKEY: case YKEY:
-					if( ctrlDown || shiftDown || event.shiftKey || event.ctrlKey )
-						return true;
-				break;
-				case SHIFTKEY:	
-				case CTRLKEY:
-					return true;
-				break;
-				case ARROWRIGHT:	
-				case ARROWLEFT:
-					if( ctrlDown || shiftDown || event.shiftKey || event.ctrlKey )
-						return true;
-					value = $input.val();
-					pos = getCaretPosition($input[0]);
-					if( key == ARROWRIGHT && pos==value.length ){
-						if( right = findRight.call(options,dataset,value) ){
-							$input.trigger('pick.xdsoft',[
-								__safe.call(options,
-									'getValue',right.source,
-									[right.right,right.source]
-								)
-							]);
-						}else
-							$input.trigger('pick.xdsoft');
-						event.preventDefault();
-						return false;
-					}
-					return true;
-				break;
-				case TAB:
-				return true;
-				case ENTER:
-					if( opened ){
-						$input.trigger('pick.xdsoft');
-						event.preventDefault();
-						return false;
-					}else
-						return true;
-				break;
-				case ESC:
-					$input
-						.val(currentValue)
-						.trigger('close.xdsoft');
-					event.preventDefault();
-					return false;
-				break;
-				case ARROWDOWN:
-				case ARROWUP:
-					if( !opened ){
-						$input.trigger('open.xdsoft');
-						event.preventDefault();
-						return false;
-					}
-					
-					active = $dropdown.find('div.active');
-					
-					var next = key==ARROWDOWN?'next':'prev', timepick = true;
-					
-					if( active.length ){
-						active.removeClass('active');
-						if( active[next]().length ){
-							active[next]().addClass('active');
-						}else{
-							$input.val(currentValue);
-							timepick = false;
-						}
-					}else{
-						$dropdown.children().eq(key==ARROWDOWN?0:-1).addClass('active');
-					}
-					
-					if( timepick ){
-						$input.trigger('timepick.xdsoft');
-					}
-					event.preventDefault();
-					return false;
-				break;	
-	
-			}
-			$hint.html('');
-			clearTimeout(timer1);
-			clearTimeout(timerhide);
-			timer1 = setTimeout(function(){
-				if( $input.val()!=currentValue ){
-					currentValue = $input.val();
-				}
-				collectData.call(options, currentValue,function( data,query ){
-					if( query != currentValue )
-						return;
-					dataset = processData.call(options,data,query);
-					$input.trigger('open.xdsoft');
-					if( options.showHint && currentValue.length && currentValue.length<=$input.prop('size') && (right = findRight.call(options,dataset,currentValue))  ){
-						var title 	=  __safe.call(options,'getTitle',right.source,[right.right,right.source]);
-						title = query+title.substr(query.length);
-						$hint.html( title );
-					}else{
-						$hint.html('');
-					}
-				});
-			},options.timeoutKeypress||10);
+			if( ret===false || ret===true )
+				return ret;
+			
+			!iOpen && $input.trigger('open.xdsoft');
+			
+			setTimeout(function(){
+				manageData();
+			},1);
+			
+			return manageData();
 		});
 	
 	currentValue = $input.val();
@@ -669,7 +693,7 @@ function init( that,options ){
 	
 	if( options.openOnFocus )
 		$input.on('focusin.xdsoft',function(){
-			$input.trigger('open.xdsoft');
+			$input.trigger('updateContent.xdsoft open.xdsoft');
 		});
 		
 	if( options.closeOnBlur )
@@ -681,163 +705,159 @@ function init( that,options ){
 		.append($input)
 		.append($dropdown);
 
-	// beauty
-	var olderBackground = false,timerUpdate = 0;
-	$input.on('update.xdsoft',function(){
-		clearTimeout(timerUpdate);
-		timerUpdate = setTimeout(function(){
-			
-			$dropdown.css($.extend(true,{
-				left:$input.position().left,
-				top:$input.position().top+parseInt($input.css('marginTop'))+parseInt($input[0].offsetHeight),
-				marginLeft:$input.css('marginLeft'),
-				marginRight:$input.css('marginRight'),
-				width:options.dropdownWidth=='100%'?$input[0].offsetWidth:options.dropdownWidth
-			},options.dropdownStyle));
-			
-			if( options.showHint ){
-				var style = getComputedStyle($input[0], "");
-				
-				$hint[0].style.cssText = style.cssText;
-				
-				$hint.css({
-					borderStyle:'solid',
-					borderCollapse:style.borderCollapse,
-					borderLeftWidth:style.borderLeftWidth,
-					borderRightWidth:style.borderRightWidth,
-					borderTopWidth:style.borderTopWidth,
-					borderBottomWidth:style.borderBottomWidth,
-					paddingBottom:style.paddingBottom,
-					marginBottom:style.marginBottom,
-					paddingTop:style.paddingTop,
-					marginTop:style.marginTop,
-					paddingLeft:style.paddingLeft,
-					marginLeft:style.marginLeft,
-					paddingRight:style.paddingRight,
-					marginRight:style.marginRight,
-					maxHeight:style.maxHeight,
-					minHeight:style.minHeight,
-					height:style.height,
-					maxWidth:style.maxWidth,
-					minWidth:style.minWidth,
-					width:style.width,
-					letterSpacing:style.letterSpacing,
-					lineHeight:style.lineHeight,
-					outlineWidth:style.outlineWidth,
-					//font:style.font,
-					fontFamily:style.fontFamily,
-					fontVariant:style.fontVariant,
-					fontStyle:style.fontStyle,
-					fontSize:style.fontSize,
-					fontWeight:style.fontWeight,
-					flex:style.flex,
-					justifyContent:style.justifyContent,
-					borderRadius:style.borderRadius
-				})
-				
-				$hint.css($.extend(true,{
-					position:'absolute',
-					zIndex:'1',
-					//lineHeight:$input.height()+'px',
-					borderColor:'transparent',
-					outlineColor:'transparent',
-					left:$input.position().left,
-					top:$input.position().top,
-					//width:$input[0].offsetWidth,
-					//height:$input[0].offsetHeight,
-					background:$input.css('background')
-				},options.hintStyle));
-				
-				if( olderBackground!==false ){
-					$hint.css('background',olderBackground);
-				}else{
-					olderBackground = $input.css('background');
-				}
-				
-				$input
-					.css('background','transparent')
-				$box
-					.append($hint);
-			}
-		},options.timeoutUpdate||10);
-	});
+
+	var olderBackground = false,
+		timerUpdate = 0;
 	
-	$input.trigger('update.xdsoft');
-	
-	var timerhide = 0;
 	$input
+		.on('updateHelperPosition.xdsoft',function(){
+			clearTimeout(timerUpdate);
+			timerUpdate = setTimeout(function(){
+
+				$dropdown.css($.extend(true,{
+					left:$input.position().left,
+					top:$input.position().top+parseInt($input.css('marginTop'))+parseInt($input[0].offsetHeight),
+					marginLeft:$input.css('marginLeft'),
+					marginRight:$input.css('marginRight'),
+					width:options.dropdownWidth=='100%'?$input[0].offsetWidth:options.dropdownWidth
+				},options.dropdownStyle));
+				
+				if( options.showHint ){
+					var style = getComputedStyle($input[0], "");
+					
+					$hint[0].style.cssText = style.cssText;
+					
+					$hint.css({
+						'box-sizing':style.boxSizing,
+						borderStyle:'solid',
+						borderCollapse:style.borderCollapse,
+						borderLeftWidth:style.borderLeftWidth,
+						borderRightWidth:style.borderRightWidth,
+						borderTopWidth:style.borderTopWidth,
+						borderBottomWidth:style.borderBottomWidth,
+						paddingBottom:style.paddingBottom,
+						marginBottom:style.marginBottom,
+						paddingTop:style.paddingTop,
+						marginTop:style.marginTop,
+						paddingLeft:style.paddingLeft,
+						marginLeft:style.marginLeft,
+						paddingRight:style.paddingRight,
+						marginRight:style.marginRight,
+						maxHeight:style.maxHeight,
+						minHeight:style.minHeight,
+						maxWidth:style.maxWidth,
+						minWidth:style.minWidth,
+						width:style.width,
+						letterSpacing:style.letterSpacing,
+						lineHeight:style.lineHeight,
+						outlineWidth:style.outlineWidth,
+						fontFamily:style.fontFamily,
+						fontVariant:style.fontVariant,
+						fontStyle:style.fontStyle,
+						fontSize:style.fontSize,
+						fontWeight:style.fontWeight,
+						flex:style.flex,
+						justifyContent:style.justifyContent,
+						borderRadius:style.borderRadius,
+						'-webkit-box-shadow':'none',
+						'box-shadow':'none'
+					});
+					
+					$input.css('font-size',style.fontSize)// fix bug with em font size
+					
+					$hint.innerHeight($input.innerHeight());
+					
+					$hint.css($.extend(true,{
+						position:'absolute',
+						zIndex:'1',
+						borderColor:'transparent',
+						outlineColor:'transparent',
+						left:'0px',
+						top:'0px',
+						background:$input.css('background')
+					},options.hintStyle));
+					
+					if( olderBackground!==false ){
+						$hint.css('background',olderBackground);
+					}else{
+						olderBackground = $input.css('background');
+					}
+					
+					$input
+						.css('background','transparent')
+					$box
+						.append($hint);
+				}
+			},options.timeoutUpdate||1);
+		})
+		.trigger('updateHelperPosition.xdsoft')
+		
 		.on('close.xdsoft',function(){
-			clearTimeout(timerhide);
-			timerhide = setTimeout(function(){
-				$dropdown
-					.hide()
-				if( !options.autoselect )
-					$input.val(currentValue);
-			},100);
-			$hint.html('');
-			opened = false;
+			if( !iOpen )
+				return;
+				
+			$dropdown
+				.hide();
+			
+			$hint
+				.empty();	
+
+			if( !options.autoselect )
+				$input.val(currentValue);
+				
+			iOpen = false;
+
 			currentInput = false;
 		})
-		.on('open.xdsoft',function(){
-			$('input').trigger('close.xdsoft');
+		
+		.on('updateContent.xdsoft',function(){
 			var out = renderData.call(options,dataset,$input.val());
-			if( out.length ){	
-				clearTimeout(timerhide);
-				timerhide = setTimeout(function(){
-					$dropdown
-						.empty()
-						.html(out)
-						.show()
-				},100);
-				
-				$(out).each(function(){
-					this.css($.extend(true,{
-						paddingLeft:$input.css('paddingLeft'),
-						paddingRight:$input.css('paddingRight')
-					},options.itemStyle));
-				});
-				
-				if( options.copyright )
-					$dropdown.append($copyright);
-					
-				opened = true;
-				currentInput = $input;
-			}else{
-				$(this).trigger('close.xdsoft');
-			}
-		});
-	
-	$input.on('destroy.xdsoft',function(){
-		$input.removeClass('xdsoft');
-		$box.after($input);
-		$box.remove();
-		delete $box;
-		clearTimeout(timer1);
-		currentInput = false;
-		$input.data('xdsoft_autocomplete',null);
-		$input
-			.off('keydown.xdsoft')
-			.off('destroy.xdsoft')
-			.off('open.xdsoft')
-			.off('close.xdsoft')
-			.off('pick.xdsoft')
-			.off('timepick.xdsoft')
-			.off('selected.xdsoft')
-			.off('focusin.xdsoft')
-	});
-};
+			
+			$(out).each(function(){
+				this.css($.extend(true,{
+					paddingLeft:$input.css('paddingLeft'),
+					paddingRight:$input.css('paddingRight')
+				},options.itemStyle));
+			});
+			
+			$dropdown
+				.html(out);
+		})
+		
+		.on('open.xdsoft',function(){
+			if( iOpen )
+				return;
+			
+			$dropdown
+				.show()
 
+			iOpen = true;
+				
+			currentInput = $input;
+		})
+		.on('destroy.xdsoft',function(){
+			$input.removeClass('xdsoft');
+			$box.after($input);
+			$box.remove();
+			delete $box;
+			clearTimeout(timer1);
+			currentInput = false;
+			$input.data('xdsoft_autocomplete',null);
+			$input
+				.off('.xdsoft')
+		});
+};
 
 $.fn.autocomplete = function( _options ){
 	if( _options=='destroy' )
 		return this.trigger('destroy.xdsoft');
 	if( _options=='update' )
-		return this.trigger('update.xdsoft');	
+		return this.trigger('updateHelperPosition.xdsoft');	
 		
 	var options = $.extend(true,{},defaultSetting,_options);
 
 	return this.each(function(){
 		init(this,options);
 	});
-}
+};
 }(jQuery);

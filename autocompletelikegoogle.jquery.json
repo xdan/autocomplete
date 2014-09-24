@@ -1,8 +1,8 @@
 {
-    "name": "autocomplete",
-    "version": "2.3.4",
-	"title": "Autocomplete",
-    "description": "Autocomplete like Google",
+    "name": "autocompletelikegoogle",
+    "version": "1.0.0",
+	"title": "Autocomplete like Google",
+    "description": "Simple autocomplete like Google",
     "keywords": [
 		"autocomplete",
 		"ajax",

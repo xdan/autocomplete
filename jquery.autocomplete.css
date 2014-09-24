@@ -41,6 +41,12 @@ text-align: start;
 	overflow:hidden !important;
 	white-space: pre  !important;
 }
+
+.xdsoft_autocomplete .xdsoft_autocomplete_hint span{
+	color:transparent;
+	opacity: 0.0;
+}
+
 .xdsoft_autocomplete .xdsoft_autocomplete_dropdown > .xdsoft_autocomplete_copyright{
 	color:#ddd;
 	font-size:10px;
