@@ -118,7 +118,6 @@ var
 		autoselect:false,
 		
 		limit:20,
-		limitInCache:200,
 		
 		timeoutUpdate:10,
 		
