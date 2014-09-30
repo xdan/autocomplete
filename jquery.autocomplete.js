@@ -1,5 +1,5 @@
 /**
- * @preserve jQuery Autocomplete plugin v1.0.2
+ * @preserve jQuery Autocomplete plugin v1.0.4
  * @homepage http://xdsoft.net/jqplugins/autocomplete/
  * (c) 2014, Chupurnov Valeriy <chupurnov@gmail.com>
  */
@@ -102,7 +102,7 @@ var
 		valueKey:'value',
 		titleKey:'title',
 		highlight: true,
-		copyright:false,
+
 		showHint:true,
 		
 		dropdownWidth:'100%',
@@ -118,8 +118,9 @@ var
 		autoselect:false,
 		
 		limit:20,
+		limitInCache:200,
+		
 		timeoutUpdate:10,
-		timeoutKeypress:10,
 		
 		get: function(property,source){
 			return __get.call(this,property,source);
@@ -153,7 +154,11 @@ var
 		
 		valid:[
 			function ( value,query ){
-				return value.toLowerCase().indexOf(query.toLowerCase())!=-1;
+				try{
+					return value.toLowerCase().indexOf(query.toLowerCase())!=-1;
+				}catch( e ){
+					console.log(e);
+				} 
 			}
 		],
 		
@@ -336,38 +341,44 @@ function findRight( data,query ){
 	
 	return false;
 }
-function processData( data,query ){
-	var _data = preparseData.call( this,data,query );
-	
-	for(var source in _data){
-		_data[source] = __safe.call(this,'filter',source,[_data[source],query,source],_data[source]);
-	}
-	
-	return _data;
-}
 
-function collectData( query,callback ){
-	var data = [],
-		options = this;
+function processData( data,query ){
+	preparseData
+		.call( this,data,query );
+	
+	for( var source=0;source<data.length;source++ ){
+		data[source] = __safe.call(this,
+			'filter',
+			source,
+			[data[source],query,source],
+			data[source]
+		);
+	}
+};
+
+
+function collectData( query,datasource,callback ){
+	var options = this;
 	
 	if( $.isFunction(options.sources) ){
 			options.sources.apply(options,[query,function(items){
-				safe_call.call(options,callback,[data = [items],query]);
-			},data,0]);
+				datasource = [items];
+				safe_call.call(options,callback,[query]);
+			},datasource,0]);
 	}else{
 		for( var source in options.sources ){
 			if( $.isArray(options.sources[source]) ){
-				data[source] = options.sources[source];
+				datasource[source] = options.sources[source];
 			}else if( $.isFunction(options.sources[source]) ){
 				options.sources[source].apply(options,[query,function(items){
-					if( !data[source] )
-						data[source] = [];
+					if( !datasource[source] )
+						datasource[source] = [];
 						
 					if( items && $.isArray(items) )
-						data[source] = data[source].concat(items);
+						datasource[source] = datasource[source].concat(items);
 						
-					safe_call.call(options,callback,[data,query]);
-				},data,source]);
+					safe_call.call(options,callback,[query]);
+				},datasource,source]);
 			}else{
 				switch( options.sources[source].type ){
 					case 'remote':
@@ -375,50 +386,34 @@ function collectData( query,callback ){
 							if( !isset(options.sources[source].minLength) || query.length>=options.sources[source].minLength ){
 								var url = __safe.call(options,'replace',source,[options.sources[source].url,query],'');
 								loadRemote(url,options.sources[source],function( resp ){
-									data[source] = resp;
-									safe_call.call(options,callback,[data,query]);
+									datasource[source] = resp;
+									safe_call.call(options,callback,[query]);
 								},options.debug);
 							}
-						}
-					break;
-					case 'preload':
-						if( !options.sources[source].data ){
-							if( isset(options.sources[source].url) ){
-								loadRemote(options.sources[source].url,options.sources[source],function( resp ){
-									data[source] = resp;
-									safe_call.call(options,callback,[data,query]);
-								},options.debug);
-							}
-						}else{
-							data[source] = resp;
 						}
 					break;
 					default:
 						if( isset(options.sources[source]['data']) ){
-							data[source] = options.sources[source]['data'];
+							datasource[source] = options.sources[source]['data'];
 						}else{
-							data[source] = options.sources[source];
+							datasource[source] = options.sources[source];
 						}
 				}
 			}
 		}
 	}
-	safe_call.call(options,callback,[data,query]);
+	safe_call.call(options,callback,[query]);
 };
 
 function preparseData( data,query ){
-	var _data = [], source, i;
-	
-	for(source in data){
-		_data[source] = __safe.call(this,
+	for( var source=0;source<data.length;source++ ){
+		data[source] = __safe.call(this,
 			'preparse',
 			source,
 			[data[source],query],
 			data[source]
 		);
 	}
-	
-	return _data;
 };
 
 function renderData( data,query ){
@@ -526,10 +521,11 @@ function init( that,options ){
 		}else
 			return;
 			
-		collectData.call(options, currentValue,function( data,query ){
+		collectData.call(options,currentValue,dataset,function( query ){
 			if( query != currentValue )
 				return;
-			dataset = processData.call(options,data,query);
+				
+			processData.call(options,dataset,query);
 			
 			$input.trigger('updateContent.xdsoft');
 			
@@ -687,15 +683,17 @@ function init( that,options ){
 	
 	currentValue = $input.val();
 	
-	collectData.call(options, $input.val(),function( data,query ){
-		dataset = processData.call(options,data,query);
+	collectData.call(options, $input.val(),dataset,function( query ){
+		processData.call(options,dataset,query);
 	});
 	
-	if( options.openOnFocus )
+	if( options.openOnFocus ){
 		$input.on('focusin.xdsoft',function(){
-			$input.trigger('updateContent.xdsoft open.xdsoft');
+			$input.trigger('updateContent.xdsoft');
+			$input.trigger('open.xdsoft');
 		});
-		
+	}
+	
 	if( options.closeOnBlur )
 		$input.on('focusout.xdsoft',function(){
 			$input.trigger('close.xdsoft');
@@ -822,6 +820,8 @@ function init( that,options ){
 			
 			$dropdown
 				.html(out);
+				
+			delete out;
 		})
 		
 		.on('open.xdsoft',function(){

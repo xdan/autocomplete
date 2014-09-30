@@ -91,7 +91,7 @@ $('#remote_input').autocomplete({
 	}]
 });
 $('button#open').click(function(){
-	$('#remote_input').trigger('open');
+	$('#remote_input').trigger('updateContent open');
 	$('#remote_input').focus();
 });
 &lt;/script&gt;</pre>
@@ -147,7 +147,8 @@ sources:[{
 }]});
 
 $('#open').click(function(){
-	$('#remote_input').trigger('open');
+	$('#remote_input').trigger('updateContent.xdsoft');
+	$('#remote_input').trigger('open.xdsoft');
 	$('#remote_input').focus();
 });
 /*********************************** remote end *****************************************************/
