@@ -82,7 +82,7 @@ $('#remote_input').autocomplete({
 	sources:[{
 		url:"/test.php?query=%QUERY%",
 		type:'remote',
-		getValueFromItem:function(item){
+		getValue:function(item){
 			return item.title
 		},
 		ajax:{
