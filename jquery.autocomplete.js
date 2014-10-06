@@ -1,5 +1,5 @@
 /**
- * @preserve jQuery Autocomplete plugin v1.0.5
+ * @preserve jQuery Autocomplete plugin v1.0.6
  * @homepage http://xdsoft.net/jqplugins/autocomplete/
  * (c) 2014, Chupurnov Valeriy <chupurnov@gmail.com>
  */
