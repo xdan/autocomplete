@@ -1,9 +1,9 @@
 /**
- * @preserve jQuery Autocomplete plugin v1.0.8
+ * @preserve jQuery Autocomplete plugin v1.0.9
  * @homepage http://xdsoft.net/jqplugins/autocomplete/
  * (c) 2014, Chupurnov Valeriy <chupurnov@gmail.com>
  */
-!function ($) {
+(function ($) {
 	'use strict';
 	var	ARROWLEFT = 37,
 		ARROWRIGHT = 39,
@@ -112,7 +112,7 @@
 					style = this,
 					property,
 					fontSize = getPixelSize(element, currentStyle, 'fontSize', null);
-
+				
 				for (property in currentStyle) {
 					if (currentStyle.hasOwnProperty(property)) {
 						if (/width|height|margin.|padding.|border.+W/.test(property) && style[property] !== 'auto') {
@@ -291,9 +291,9 @@
 
 
 	function findRight( data,query ){
-		var right = false;
+		var right = false,source;
 		
-		for(var source in data){
+		for (source = 0;source < data.length;source += 1) {
 			if( right = __safe.call(this,"findRight",source,[data[source],query,source]) ){
 				return {right:right,source:source};
 			}
@@ -303,14 +303,15 @@
 	}
 
 	function processData( data,query ){
+		var source;
 		preparseData
 			.call( this,data,query );
 		
-		for( var source=0;source<data.length;source++ ){
+		for (source = 0;source < data.length;source += 1) {
 			data[source] = __safe.call(this,
 				'filter',
 				source,
-				[data[source],query,source],
+				[data[source], query, source],
 				data[source]
 			);
 		}
@@ -318,7 +319,7 @@
 
 
 	function collectData( query,datasource,callback ){
-		var options = this;
+		var options = this,source;
 		
 		if( $.isFunction(options.sources) ){
 				options.sources.apply(options,[query,function(items){
@@ -326,29 +327,33 @@
 					safe_call.call(options,callback,[query]);
 				},datasource,0]);
 		}else{
-			for( var source in options.sources ){
-				if( $.isArray(options.sources[source]) ){
+			for (source = 0;source < options.sources.length;source += 1) {
+				if ($.isArray(options.sources[source])) {
 					datasource[source] = options.sources[source];
-				}else if( $.isFunction(options.sources[source]) ){
+				} else if ($.isFunction(options.sources[source])) {
 					options.sources[source].apply(options,[query,function(items){
-						if( !datasource[source] )
+						if (!datasource[source]) {
 							datasource[source] = [];
+						}
 							
-						if( items && $.isArray(items) )
+						if (items && $.isArray(items)) {
 							datasource[source] = datasource[source].concat(items);
+						}
 							
 						safe_call.call(options,callback,[query]);
-					},datasource,source]);
-				}else{
-					switch( options.sources[source].type ){
+					}, datasource,source]);
+				} else {
+					switch (options.sources[source].type) {
 						case 'remote':
-							if( isset(options.sources[source].url) ){
-								if( !isset(options.sources[source].minLength) || query.length>=options.sources[source].minLength ){
+							if (isset(options.sources[source].url)) {
+								if(!isset(options.sources[source].minLength) || query.length >= options.sources[source].minLength){
 									var url = __safe.call(options,'replace',source,[options.sources[source].url,query],'');
-									loadRemote(url,options.sources[source],function( resp ){
-										datasource[source] = resp;
-										safe_call.call(options,callback,[query]);
-									},options.debug);
+									(function (source) {
+										loadRemote(url,options.sources[source], function(resp){
+											datasource[source] = resp;
+											safe_call.call(options,callback,[query]);
+										},options.debug);
+									}(source));
 								}
 							}
 						break;
@@ -379,8 +384,8 @@
 	function renderData( data,query ){
 		var  source, i, $div, $divs = [];
 		
-		for( source in data ){
-			for( i in data[source] ){
+		for (source = 0;source < data.length;source += 1) {
+			for (i = 0;i < data[source].length;i += 1) {
 				if( $divs.length>=this.limit )
 					break;
 					
@@ -474,9 +479,9 @@
 		
 		findRight:[
 			function(items,query,source){
-				var results = [],value = '';
+				var results = [],value = '',i;
 				
-				for(var i in items){
+				for (i = 0;i < items.length;i += 1) {
 					value = __safe.call(this,'getValue',source,[items[i],source]);
 					if( __safe.call(this,'equal',source,[value,query,source],false) ){
 						return items[i];
@@ -641,13 +646,14 @@
 
 			return;
 		}
-		function manageKey( event ){
+		function manageKey (event) {
 			var key = event.which;
 			
 			switch( key ){
 				case AKEY: case CKEY: case VKEY: case ZKEY: case YKEY:
-					if( event.shiftKey || event.ctrlKey )
+					if (event.shiftKey || event.ctrlKey) {
 						return true;
+					}
 				break;
 				case SHIFTKEY:	
 				case CTRLKEY:
@@ -655,34 +661,36 @@
 				break;
 				case ARROWRIGHT:	
 				case ARROWLEFT:
-					if( ctrlDown || shiftDown || event.shiftKey || event.ctrlKey )
+					if (ctrlDown || shiftDown || event.shiftKey || event.ctrlKey) {
 						return true;
+					}
 					value = $input.val();
 					pos = getCaretPosition($input[0]);
-					if( key == ARROWRIGHT && pos==value.length ){
-						if( right = findRight.call(options,dataset,value) ){
-							$input.trigger('pick.xdsoft',[
+					if (key === ARROWRIGHT && pos === value.length) {
+						if (right = findRight.call(options, dataset, value)){
+							$input.trigger('pick.xdsoft', [
 								__safe.call(options,
-									'getValue',right.source,
-									[right.right,right.source]
+									'getValue', right.source,
+									[right.right, right.source]
 								)
 							]);
-						}else
+						} else {
 							$input.trigger('pick.xdsoft');
+						}
 						event.preventDefault();
 						return false;
 					}
 					return true;
-				break;
 				case TAB:
 				return true;
 				case ENTER:
-					if( iOpen ){
+					if (iOpen) {
 						$input.trigger('pick.xdsoft');
 						event.preventDefault();
 						return false;
-					}else
+					} else {
 						return true;
+					}
 				break;
 				case ESC:
 					$input
@@ -690,10 +698,9 @@
 						.trigger('close.xdsoft');
 					event.preventDefault();
 					return false;
-				break;
 				case ARROWDOWN:
 				case ARROWUP:
-					if( !iOpen ){
+					if (!iOpen) {
 						$input.trigger('updateContent.xdsoft');
 						$input.trigger('open.xdsoft');
 						event.preventDefault();
@@ -721,9 +728,7 @@
 					}
 					
 					event.preventDefault();
-					return false;
-				break;	
-
+					return false;	
 			}
 			return;
 		}
@@ -770,16 +775,19 @@
 			.on('keydown.xdsoft keypress.xdsoft input.xdsoft cut.xdsoft paste.xdsoft', function( event ){
 				var ret = manageKey(event);
 				
-				if( ret===false || ret===true )
+				if (ret === false || ret === true) {
 					return ret;
+				}
 				
-				!iOpen && $input.trigger('open.xdsoft');
+				if (!iOpen) {
+					$input.trigger('open.xdsoft');
+				}
 				
 				setTimeout(function(){
 					manageData();
 				},1);
 				
-				return manageData();
+				manageData();
 			});
 		
 		currentValue = $input.val();
@@ -982,4 +990,4 @@
 			init(this,options);
 		});
 	};
-}(jQuery);
+}(jQuery));
