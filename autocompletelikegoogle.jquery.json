@@ -1,6 +1,6 @@
 {
     "name": "autocompletelikegoogle",
-    "version": "1.0.7",
+    "version": "1.0.8",
 	"title": "Autocomplete like Google",
     "description": "Simple autocomplete like Google",
     "keywords": [
@@ -10,6 +10,8 @@
 		"form",
 		"ui",
 		"input",
+		"accents",
+		"accents",
 		"jquery"
     ],
    "author": {
