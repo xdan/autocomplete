@@ -647,7 +647,7 @@
 			return;
 		}
 		function manageKey (event) {
-			var key = event.which;
+			var key = event.which,right;
 			
 			switch( key ){
 				case AKEY: case CKEY: case VKEY: case ZKEY: case YKEY:
