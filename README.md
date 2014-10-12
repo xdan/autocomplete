@@ -1,7 +1,7 @@
 Autocomplete
 ============
 
-[Documentation&Demo][doc]
+[Documentation & Demo][doc]
 
 jQuery Autocomplete plugin like Google search
 
