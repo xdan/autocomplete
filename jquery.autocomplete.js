@@ -1,5 +1,5 @@
 /**
- * @preserve jQuery Autocomplete plugin v1.1.0
+ * @preserve jQuery Autocomplete plugin v1.1.1
  * @homepage http://xdsoft.net/jqplugins/autocomplete/
  * (c) 2014, Chupurnov Valeriy <chupurnov@gmail.com>
  */
@@ -26,6 +26,7 @@
 		ctrlDown = false,
 		shiftDown = false,
 		interval_for_visibility,
+		publics = {},
 		accent_map = {
 			'ẚ':'a','Á':'a','á':'a','À':'a','à':'a','Ă':'a','ă':'a','Ắ':'a','ắ':'a','Ằ':'a','ằ':'a','Ẵ':'a','ẵ':'a','Ẳ':'a',
 			'Ẫ':'a','ẫ':'a','Ẩ':'a','ẩ':'a','Ǎ':'a','ǎ':'a','Å':'a','å':'a','Ǻ':'a','ǻ':'a','Ä':'a','ä':'a','Ǟ':'a','ǟ':'a',
@@ -231,7 +232,7 @@
 
 	function __safe( callbackName,source,args,defaultValue ){
 		var undefinedVar;
-		return safe_call.call( this, (isset(this.sources[source])&&this.sources[source].hasOwnProperty(callbackName))?this.sources[source][callbackName]:undefinedVar,args, function(){
+		return safe_call.call( this, (isset(this.source[source])&&this.source[source].hasOwnProperty(callbackName))?this.source[source][callbackName]:undefinedVar,args, function(){
 			return safe_call.call(this,
 					isset(this[callbackName][source])?
 						this[callbackName][source]:(
@@ -253,8 +254,8 @@
 		if(!isset(source))
 			source = 0;
 		
-		if( $.isArray(this.sources) && isset(this.sources[source]) && isset(this.sources[source][property]))
-			return this.sources[source][property];
+		if( $.isArray(this.source) && isset(this.source[source]) && isset(this.source[source][property]))
+			return this.source[source][property];
 			
 		if( isset(this[property]) ){
 			if( $.isArray(this[property]) ){
@@ -321,17 +322,17 @@
 	function collectData( query,datasource,callback ){
 		var options = this,source;
 		
-		if( $.isFunction(options.sources) ){
-				options.sources.apply(options,[query,function(items){
+		if( $.isFunction(options.source) ){
+				options.source.apply(options,[query,function(items){
 					datasource = [items];
 					safe_call.call(options,callback,[query]);
 				},datasource,0]);
 		}else{
-			for (source = 0;source < options.sources.length;source += 1) {
-				if ($.isArray(options.sources[source])) {
-					datasource[source] = options.sources[source];
-				} else if ($.isFunction(options.sources[source])) {
-					options.sources[source].apply(options,[query,function(items){
+			for (source = 0;source < options.source.length;source += 1) {
+				if ($.isArray(options.source[source])) {
+					datasource[source] = options.source[source];
+				} else if ($.isFunction(options.source[source])) {
+					options.source[source].apply(options,[query,function(items){
 						if (!datasource[source]) {
 							datasource[source] = [];
 						}
@@ -343,13 +344,16 @@
 						safe_call.call(options,callback,[query]);
 					}, datasource,source]);
 				} else {
-					switch (options.sources[source].type) {
+					switch (options.source[source].type) {
 						case 'remote':
-							if (isset(options.sources[source].url)) {
-								if(!isset(options.sources[source].minLength) || query.length >= options.sources[source].minLength){
-									var url = __safe.call(options,'replace',source,[options.sources[source].url,query],'');
+							if (isset(options.source[source].url)) {
+								if (!isset(options.source[source].minLength) || query.length >= options.source[source].minLength){
+									var url = __safe.call(options,'replace',source,[options.source[source].url,query],'');
+									if (!datasource[source]) {
+										datasource[source] = [];
+									}
 									(function (source) {
-										loadRemote(url,options.sources[source], function(resp){
+										loadRemote(url,options.source[source], function(resp){
 											datasource[source] = resp;
 											safe_call.call(options,callback,[query]);
 										},options.debug);
@@ -358,10 +362,10 @@
 							}
 						break;
 						default:
-							if( isset(options.sources[source]['data']) ){
-								datasource[source] = options.sources[source]['data'];
+							if( isset(options.source[source]['data']) ){
+								datasource[source] = options.source[source]['data'];
 							}else{
-								datasource[source] = options.sources[source];
+								datasource[source] = options.source[source];
 							}
 					}
 				}
@@ -593,6 +597,8 @@
 			active = null,
 			pos = 0;
 		
+		//it can be used to access settings
+		$input.data('autocomplete_options', options);
 		
 		$box
 			.css({
@@ -977,17 +983,59 @@
 					.off('.xdsoft')
 			});
 	};
-
-	$.fn.autocomplete = function( _options ){
-		if( _options=='destroy' )
+	
+	publics = {
+		destroy: function () {
 			return this.trigger('destroy.xdsoft');
-		if( _options=='update' )
+		},
+		update: function () {
 			return this.trigger('updateHelperPosition.xdsoft');	
-			
-		var options = $.extend(true,{},defaultSetting,_options);
-
-		return this.each(function(){
-			init(this,options);
+		},
+		options: function (_options) {
+			if (this.data('autocomplete_options') && $.isPlainObject(_options)) {
+				this.data('autocomplete_options', $.extend(true, this.data('autocomplete_options'), _options));
+			}
+			return this;
+		},
+		setSource: function (_newsource, id) {
+			if(this.data('autocomplete_options') && ($.isPlainObject(_newsource) || $.isFunction(_newsource) || $.isArray(_newsource))) {
+				var source = this.data('autocomplete_options').source;
+				if (id!==undefined && !isNaN(id)) {
+					if ($.isPlainObject(_newsource) || $.isArray(_newsource)) {
+						source[id] =  $.extend(true,$.isArray(_newsource) ? [] : {}, source[id], _newsource);
+					} else {
+						source[id] =  _newsource;
+					}
+				} else {
+					if ($.isFunction(_newsource)) {
+						this.data('autocomplete_options').source = _newsource;
+					} else {
+						$.extend(true, source, _newsource);
+					}
+				}
+			}
+			return this;
+		},
+		getSource: function (id) {
+			if (this.data('autocomplete_options')) {
+				var source = this.data('autocomplete_options').source;
+				if (id!==undefined && !isNaN(id) &&source[id]) {
+					return source[id];
+				} else {
+					return source;
+				}
+			}
+			return null;
+		} 
+	};
+	
+	$.fn.autocomplete = function(_options, _second, _third){
+		if ($.type(_options) === 'string' && publics[_options]) {
+			return publics[_options].call(this, _second, _third);
+		}
+		return this.each(function () {
+			var options = $.extend(true, {}, defaultSetting, _options);
+			init(this, options);
 		});
 	};
 }(jQuery));

@@ -61,7 +61,7 @@ var states = [
 		<pre class="prettyprint linenums">&lt;script type="text/javascript"&gt;
 $(function() {
 	$("input").autocomplete({
-		sources:[states]
+		source:[states]
 	}); 
 });
 &lt;/script&gt;</pre>
@@ -79,7 +79,7 @@ $(function() {
 		<pre class="prettyprint linenums">&lt;script&gt;
 $('#remote_input').autocomplete({
 	valueKey:'title',
-	sources:[{
+	source:[{
 		url:"/test.php?query=%QUERY%",
 		type:'remote',
 		getValue:function(item){
@@ -95,8 +95,46 @@ $('button#open').click(function(){
 	$('#remote_input').focus();
 });
 &lt;/script&gt;</pre>
+		<h2>Set source after init</h2>
+		<div class="form-group" style="margin:20px 0px;">
+			<input type="text" class="form-control" id="combine" placeholder="Enter movie or state or digit">
+		</div>
+		<p>Plugin has some methods for manipulate it</p>
+		<pre class="prettyprint linenums">$('#combine').autocomplete();
+
+$('#combine')
+	.autocomplete('setSource',{
+		{
+			valueKey:'title',
+			url:"",
+			type:'remote',
+			getValue:function(item){
+				return item.title
+			},
+			ajax:{
+				dataType : 'jsonp'
+			}
+		},
+		[],
+		[]
+	});
+	
+$('#combine')
+	.autocomplete('setSource',states,1)
+	.autocomplete('setSource',['one','two','three','for','five','six','seven','eight','nine','zero'],2);
+	
+var first = $('#combine')
+	.autocomplete('getSource',0);
+first.url = "/test.php?query=%QUERY%&amp;test=1",
+
+</pre>
 	</div>
 </div>
+<p class="text-center">
+	<a id="local" class="btn btn-link" href="http://xdsoft.net/jqplugins/autocomplete">Documentation</a>
+	<a id="local" class="btn btn-link" href="#local">Local</a>
+	<a class="btn btn-link" href="#remote">Remote</a>
+</p>
 </body>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
@@ -107,8 +145,6 @@ $('button#open').click(function(){
 window.prettyPrint && prettyPrint()
 </script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-<script src="http://api-maps.yandex.ru/2.0-stable/?load=package.full&lang=ru-RU" type="text/javascript"></script>
-
 <link rel="stylesheet" href="jquery.autocomplete.css">
 <script src="jquery.autocomplete.js" type="text/javascript"></script>
 <script>
@@ -127,7 +163,7 @@ var states = [
 ];
 
 $('#auto1').autocomplete({
-	sources:[states]
+	source:[states]
 });
 /*********************************** local end *****************************************************/
 
@@ -135,7 +171,7 @@ $('#auto1').autocomplete({
 /*********************************** remote start *****************************************************/
 $('#remote_input').autocomplete({
 valueKey:'title',
-sources:[{
+source:[{
 	url:"http://xdsoft.net/jquery-plugins/?task=demodata&s=%QUERY%",
 	type:'remote',
 	getValueFromItem:function(item){
@@ -154,7 +190,7 @@ $('#open').click(function(){
 /*********************************** remote end *****************************************************/
 
 $('#auto2').autocomplete({
-	sources:[{
+	source:[{
 		data:states,
 		preparse:function(items,query,sourse){
 			for(i in items)
@@ -173,27 +209,31 @@ $('#auto2').autocomplete({
 });
 
 
-$('#auto4').autocomplete({
-	sources:function(req,add){
-		if( req=='' )
-			return;
-		var options = this;
-		$.getJSON("http://geocode-maps.yandex.ru/1.x/?callback=?&format=json&geocode="+encodeURIComponent(req), function(data) {  
-			var suggestions = [];
-			$.each(data.response.GeoObjectCollection.featureMember, function(i, val){  
-				suggestions.push(val.GeoObject.metaDataProperty.GeocoderMetaData.text.toLowerCase());  
-			});  
-			add(suggestions);
-		});  
-	},
-	valid:function(value,query){
-		return true
-	},
-	findRight:function(items){
-		return items[0]?items[0]:false;
-	},
+$('#combine').autocomplete();
+
+$('#combine')
+	.autocomplete('setSource',[
+		{
+			valueKey:'title',
+			url:"",
+			type:'remote',
+			getValue:function(item){
+				return item.title
+			},
+			ajax:{
+				dataType : 'jsonp'
+			}
+		},
+		[],
+		[]
+	]);
 	
-	dropdownWidth:'auto'
-});
+$('#combine')
+	.autocomplete('setSource',states,1)
+	.autocomplete('setSource',['one','two','three','for','five','six','seven','eight','nine','zero'],2);
+	
+var first = $('#combine')
+	.autocomplete('getSource',0);
+first.url = "http://xdsoft.net/jquery-plugins/?task=demodata&s=%QUERY%";
 </script>
 </html>
