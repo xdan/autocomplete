@@ -463,7 +463,7 @@
 		limit: 20,
 		visibleLimit: 20,
 		visibleHeight: 0,
-		defaultHeightItem: 25,
+		defaultHeightItem: 30,
 
 		timeoutUpdate: 10,
 
