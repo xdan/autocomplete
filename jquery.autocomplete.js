@@ -1,5 +1,5 @@
 /**
- * @preserve jQuery Autocomplete plugin v1.1.1
+ * @preserve jQuery Autocomplete plugin v1.1.2
  * @homepage http://xdsoft.net/jqplugins/autocomplete/
  * (c) 2014, Chupurnov Valeriy <chupurnov@gmail.com>
  */
@@ -461,6 +461,9 @@
 		replaceAccentsForRemote: true,
 		
 		limit: 20,
+		visibleLimit: 20,
+		visibleHeight: 0,
+		defaultHeightItem: 25,
 
 		timeoutUpdate: 10,
 
@@ -600,6 +603,29 @@
 		//it can be used to access settings
 		$input.data('autocomplete_options', options);
 		
+		$dropdown
+			.on('mousedown', function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+			})
+			.on('updatescroll.xdsoft', function() {
+				var _act = $dropdown.find('.active');
+				if (!_act.length) {
+					return;
+				}
+				
+				var top = _act.position().top,
+					actHght = _act.outerHeight(true),
+					scrlTop = $dropdown.scrollTop(),
+					hght = $dropdown.height();
+					
+				if (top <0) {
+					$dropdown.scrollTop(scrlTop-Math.abs(top));
+				} else if (top+actHght>hght) {
+					$dropdown.scrollTop(scrlTop+top+actHght-hght);
+				}
+			});
+		
 		$box
 			.css({
 				'display':$input.css('display'),
@@ -732,6 +758,9 @@
 					if( timepick ){
 						$input.trigger('timepick.xdsoft');
 					}
+					
+					$dropdown
+						.trigger('updatescroll.xdsoft');
 					
 					event.preventDefault();
 					return false;	
@@ -948,7 +977,8 @@
 			})
 			
 			.on('updateContent.xdsoft',function(){
-				var out = renderData.call(options,dataset,$input.val());
+				var out = renderData.call(options,dataset,$input.val()),
+					hght = 10;
 				
 				$(out).each(function(){
 					this.css($.extend(true,{
@@ -959,6 +989,15 @@
 				
 				$dropdown
 					.html(out);
+					
+				if (options.visibleHeight){
+					hght = options.visibleHeight;
+				} else {
+					hght = options.visibleLimit * ((out[0] ? out[0].outerHeight(true) : 0) || options.defaultHeightItem) + 5;
+				}
+				
+				$dropdown
+					.css('maxHeight', hght+'px')
 			})
 			
 			.on('open.xdsoft',function(){

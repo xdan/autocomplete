@@ -31,6 +31,7 @@ text-align: start;
 	margin-top:-1px;
 	background-color:#fff;
 	min-width:100%;
+	overflow:auto;
 }
 .xdsoft_autocomplete .xdsoft_autocomplete_hint{
 	position:absolute;
