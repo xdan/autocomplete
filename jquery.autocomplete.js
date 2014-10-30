@@ -1049,7 +1049,7 @@
 					source 	= options.source;
 				if (id!==undefined && !isNaN(id)) {
 					if ($.isPlainObject(_newsource) || $.isArray(_newsource)) {
-						source[id] =  $.extend(true,$.isArray(_newsource) ? [] : {}, source[id], _newsource);
+						source[id] =  $.extend(true,$.isArray(_newsource) ? [] : {}, _newsource);
 					} else {
 						source[id] =  _newsource;
 					}

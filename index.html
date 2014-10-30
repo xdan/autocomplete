@@ -134,7 +134,16 @@ first.url = "/test.php?query=%QUERY%&amp;test=1",
 	<a id="local" class="btn btn-link" href="http://xdsoft.net/jqplugins/autocomplete">Documentation</a>
 	<a id="local" class="btn btn-link" href="#local">Local</a>
 	<a class="btn btn-link" href="#remote">Remote</a>
-</p>
+</p><!--
+<input id="select_course">
+<input id="select_unit">
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>--></br>
 </body>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
@@ -235,5 +244,13 @@ $('#combine')
 var first = $('#combine')
 	.autocomplete('getSource',0);
 first.url = "http://xdsoft.net/jquery-plugins/?task=demodata&s=%QUERY%";
+/*
+var states1 = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California']
+var states2 = ['Colorado', 'Connecticut']
+$("#select_course").autocomplete({source:[states1], visibleHeight:200});
+$("#select_unit").autocomplete({source:[states1]});
+$('#select_course').on('selected.xdsoft', function(event, item){
+$("#select_unit").autocomplete('setSource',states2,0); 
+});*/
 </script>
 </html>
