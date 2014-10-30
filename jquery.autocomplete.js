@@ -1,5 +1,5 @@
 /**
- * @preserve jQuery Autocomplete plugin v1.1.2
+ * @preserve jQuery Autocomplete plugin v1.2.1
  * @homepage http://xdsoft.net/jqplugins/autocomplete/
  * (c) 2014, Chupurnov Valeriy <chupurnov@gmail.com>
  */
@@ -589,7 +589,7 @@
 		
 		var $box = $('<div class="xdsoft_autocomplete"></div>'),
 			$dropdown = $('<div class="xdsoft_autocomplete_dropdown"></div>'),
-			$hint = $('<span class="xdsoft_autocomplete_hint"></span>'),
+			$hint = $('<input readonly class="xdsoft_autocomplete_hint"/>'),
 			$input = $(that),
 			timer1 = 0,
 			dataset = [],
@@ -651,28 +651,27 @@
 				$(this).addClass('active');
 				$input.trigger('pick.xdsoft');
 			})
-		
-		
+
 		function manageData(){
 			if( $input.val()!=currentValue ){
 				currentValue = $input.val();
 			}else
 				return;
-				
+
 			collectData.call(options,currentValue,dataset,function( query ){
 				if( query != currentValue )
 					return;
 				var right;	
 				processData.call(options,dataset,query);
-				
+
 				$input.trigger('updateContent.xdsoft');
-				
+
 				if( options.showHint && currentValue.length && currentValue.length<=$input.prop('size') && (right = findRight.call(options,dataset,currentValue))  ){
 					var title 	=  __safe.call(options,'getTitle',right.source,[right.right,right.source]);
-					title = '<span>'+query+'</span>'+title.substr(query.length);
-					$hint.html( title );
+					title = /*'<span>'+*/query+/*'</span>'+*/title.substr(query.length);
+					$hint.val( title );
 				}else{
-					$hint.html('');
+					$hint.val('');
 				}
 			});
 
@@ -733,8 +732,8 @@
 				case ARROWDOWN:
 				case ARROWUP:
 					if (!iOpen) {
-						$input.trigger('updateContent.xdsoft');
 						$input.trigger('open.xdsoft');
+						$input.trigger('updateContent.xdsoft');
 						event.preventDefault();
 						return false;
 					}
@@ -803,7 +802,7 @@
 						$input.val(_value);
 					}
 					$input.trigger('autocompleted.xdsoft',[getItem(active,dataset)]);
-					$hint.html('');
+					$hint.val('');
 					setCaretPosition($input[0],$input.val().length);
 				}
 			})
@@ -833,8 +832,8 @@
 		
 		if( options.openOnFocus ){
 			$input.on('focusin.xdsoft',function(){
-				$input.trigger('updateContent.xdsoft');
 				$input.trigger('open.xdsoft');
+				$input.trigger('updateContent.xdsoft');
 			});
 		}
 		
@@ -980,13 +979,20 @@
 				var out = renderData.call(options,dataset,$input.val()),
 					hght = 10;
 				
+				if (out.length) {
+					$dropdown.show()
+				} else {
+					$dropdown.hide()
+					return;
+				}
+
 				$(out).each(function(){
 					this.css($.extend(true,{
 						paddingLeft:$input.css('paddingLeft'),
 						paddingRight:$input.css('paddingRight')
 					},options.itemStyle));
 				});
-				
+
 				$dropdown
 					.html(out);
 					
@@ -1038,7 +1044,9 @@
 		},
 		setSource: function (_newsource, id) {
 			if(this.data('autocomplete_options') && ($.isPlainObject(_newsource) || $.isFunction(_newsource) || $.isArray(_newsource))) {
-				var source = this.data('autocomplete_options').source;
+				var options = this.data('autocomplete_options'), 
+					dataset = this.data('xdsoft_autocomplete'),
+					source 	= options.source;
 				if (id!==undefined && !isNaN(id)) {
 					if ($.isPlainObject(_newsource) || $.isArray(_newsource)) {
 						source[id] =  $.extend(true,$.isArray(_newsource) ? [] : {}, source[id], _newsource);
@@ -1052,6 +1060,10 @@
 						$.extend(true, source, _newsource);
 					}
 				}
+				
+				collectData.call(options, this.val(), dataset,function( query ){
+					processData.call(options,dataset,query);
+				});
 			}
 			return this;
 		},
