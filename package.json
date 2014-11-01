@@ -1,0 +1,30 @@
+{
+  "name": "jquery-autocomplete",
+  "version": "1.2.1",
+  "description": "Simple autocomplete like Google",
+  "main": "jquery.autocomplete.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xdan/autocomplete.git"
+  },
+  "keywords": [
+    "jquery-plugin",
+    "autocomplete",
+    "ajax",
+    "complete",
+    "form",
+    "ui",
+    "input",
+    "accents",
+    "jquery"
+  ],
+  "author": "Chupurnov <chupurnov@gmail.com> (http://xdsoft.net/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xdan/autocomplete/issues"
+  },
+  "homepage": "https://xdsoft.net"
+}
