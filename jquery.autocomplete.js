@@ -1,5 +1,5 @@
 /**
- * @preserve jQuery Autocomplete plugin v1.2.1
+ * @preserve jQuery Autocomplete plugin v1.2.2
  * @homepage http://xdsoft.net/jqplugins/autocomplete/
  * (c) 2014, Chupurnov Valeriy <chupurnov@gmail.com>
  */
@@ -115,7 +115,7 @@
 					fontSize = getPixelSize(element, currentStyle, 'fontSize', null);
 				
 				for (property in currentStyle) {
-					if (currentStyle.hasOwnProperty(property)) {
+					if (Object.prototype.hasOwnProperty.call(currentStyle, property)) {
 						if (/width|height|margin.|padding.|border.+W/.test(property) && style[property] !== 'auto') {
 							style[property] = getPixelSize(element, currentStyle, property, fontSize) + 'px';
 						} else if (property === 'styleFloat') {
@@ -232,13 +232,14 @@
 
 	function __safe( callbackName,source,args,defaultValue ){
 		var undefinedVar;
-		return safe_call.call( this, (isset(this.source[source])&&this.source[source].hasOwnProperty(callbackName))?this.source[source][callbackName]:undefinedVar,args, function(){
+		return safe_call.call( this, (isset(this.source[source])&&
+			Object.prototype.hasOwnProperty.call(this.source[source], callbackName)) ? this.source[source][callbackName] : undefinedVar, args, function(){
 			return safe_call.call(this,
 					isset(this[callbackName][source])?
 						this[callbackName][source]:(
 							isset(this[callbackName][0])?
 								this[callbackName][0]:(
-									this.hasOwnProperty(callbackName)?
+									Object.prototype.hasOwnProperty.call(this, callbackName)?
 										this[callbackName]:
 										undefinedVar
 								)
@@ -822,6 +823,9 @@
 				},1);
 				
 				manageData();
+			})
+			.on('change.xdsoft', function( event ){
+				currentValue = $input.val();
 			});
 		
 		currentValue = $input.val();
@@ -897,9 +901,9 @@
 							outlineWidth:style.outlineWidth,
 							fontFamily:style.fontFamily,
 							fontVariant:style.fontVariant,
-							fontStyle:style.fontStyle,
-							fontSize:style.fontSize,
-							fontWeight:style.fontWeight,
+							fontStyle:$input.css('fontStyle'),
+							fontSize:$input.css('fontSize'),
+							fontWeight:$input.css('fontWeight'),
 							flex:style.flex,
 							justifyContent:style.justifyContent,
 							borderRadius:style.borderRadius,
@@ -907,7 +911,7 @@
 							'box-shadow':'none'
 						});
 						
-						$input.css('font-size',style.fontSize)// fix bug with em font size
+						$input.css('font-size',$input.css('fontSize'))// fix bug with em font size
 						
 						$hint.innerHeight($input.innerHeight());
 						
