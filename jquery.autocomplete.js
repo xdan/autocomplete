@@ -1,6 +1,7 @@
 /**
  * @preserve jQuery Autocomplete plugin v1.2.2
  * @homepage http://xdsoft.net/jqplugins/autocomplete/
+ * @license MIT - MIT-LICENSE.txt
  * (c) 2014, Chupurnov Valeriy <chupurnov@gmail.com>
  */
 (function ($) {
