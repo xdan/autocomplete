@@ -341,7 +341,13 @@
 							}
 								
 							if (items && $.isArray(items)) {
-								datasource[source] = datasource[source].concat(items);
+								switch (options.appendMethod) {
+									case 'replace':
+										datasource[source] = items;
+									break;
+									default:
+										datasource[source] = datasource[source].concat(items);
+								}
 							}
 								
 							safe_call.call(options,callback,[query]);
@@ -586,7 +592,7 @@
 						'</div>';
 			}
 		],
-		
+		appendMethod: 'concat', // supported merge and replace 
 		source:[]
 	};
 	function init( that,options ){
@@ -668,7 +674,7 @@
 				if( query != currentValue )
 					return;
 				var right;	
-				processData.call(options,dataset,query);
+				processData.call(options, dataset,query);
 
 				$input.trigger('updateContent.xdsoft');
 
@@ -682,16 +688,6 @@
 			});
 
 			return;
-		}
-		
-		function getChar(event) {
-		  if (event.which == null) {
-			return String.fromCharCode(event.keyCode) // IE
-		  } else if (event.which!=0 && event.charCode!=0) {
-			return String.fromCharCode(event.which)   // the rest
-		  } else {
-			return null // special key
-		  }
 		}
 
 		function manageKey (event) {
