@@ -1,6 +1,6 @@
 {
   "name": "jquery-autocomplete",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Simple autocomplete like Google",
   "main": "jquery.autocomplete.js",
   "scripts": {

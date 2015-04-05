@@ -1,5 +1,5 @@
 /**
- * @preserve jQuery Autocomplete plugin v1.2.2
+ * @preserve jQuery Autocomplete plugin v1.2.3
  * @homepage http://xdsoft.net/jqplugins/autocomplete/
  * @license MIT - MIT-LICENSE.txt
  * (c) 2014, Chupurnov Valeriy <chupurnov@gmail.com>
@@ -334,17 +334,19 @@
 				if ($.isArray(options.source[source])) {
 					datasource[source] = options.source[source];
 				} else if ($.isFunction(options.source[source])) {
-					options.source[source].apply(options,[query,function(items){
-						if (!datasource[source]) {
-							datasource[source] = [];
-						}
-							
-						if (items && $.isArray(items)) {
-							datasource[source] = datasource[source].concat(items);
-						}
-							
-						safe_call.call(options,callback,[query]);
-					}, datasource,source]);
+					(function (source) {
+						options.source[source].apply(options,[query, function(items){
+							if (!datasource[source]) {
+								datasource[source] = [];
+							}
+								
+							if (items && $.isArray(items)) {
+								datasource[source] = datasource[source].concat(items);
+							}
+								
+							safe_call.call(options,callback,[query]);
+						}, datasource,source]);
+					}(source));
 				} else {
 					switch (options.source[source].type) {
 						case 'remote':
@@ -489,14 +491,14 @@
 		findRight:[
 			function(items,query,source){
 				var results = [],value = '',i;
-				
-				for (i = 0;i < items.length;i += 1) {
-					value = __safe.call(this,'getValue',source,[items[i],source]);
-					if( __safe.call(this,'equal',source,[value,query,source],false) ){
-						return items[i];
-					}
+				if (items) {
+					for (i = 0;i < items.length;i += 1) {
+						value = __safe.call(this,'getValue',source,[items[i],source]);
+						if (__safe.call(this, 'equal', source, [value,query,source], false)) {
+							return items[i];
+						}
+					}				
 				}
-				
 				return false;
 			}
 		],
@@ -515,10 +517,12 @@
 		filter:[
 			function (items, query, source) {
 				var results = [], value = '',i;
-				for (i = 0;i < items.length;i += 1) {
-					value = isset(items[i][this.get('valueKey', source)]) ? items[i][this.get('valueKey', source)] : items[i].toString();
-					if (__safe.call(this, 'valid', source, [value, query])) {
-						results.push(items[i]); 
+				if (items) {					
+					for (i = 0;i < items.length;i += 1) {
+						value = isset(items[i][this.get('valueKey', source)]) ? items[i][this.get('valueKey', source)] : items[i].toString();
+						if (__safe.call(this, 'valid', source, [value, query])) {
+							results.push(items[i]); 
+						}
 					}
 				}
 				return results;
@@ -529,19 +533,19 @@
 			return items;
 		},
 		
-		getValue:[
-			function ( item,source ){
+		getValue: [
+			function (item, source) {
 				return isset(item[this.get('valueKey',source)])?item[this.get('valueKey',source)]:item.toString();
 			}
 		],
 		
-		getTitle:[
-			function ( item,source ){
+		getTitle: [
+			function (item, source) {
 				return isset(item[this.get('titleKey',source)])?item[this.get('titleKey',source)]:item.toString();
 			}
 		],
 		
-		render:[
+		render: [
 			function (item, source, pid, query) {
 				var value = isset(item[this.get('valueKey', source)]) ? item[this.get('valueKey', source)] : item.toString(),
 					title = (isset(item[this.get('titleKey', source)]) ? item[this.get('titleKey', source)] : value) + '',
@@ -679,8 +683,19 @@
 
 			return;
 		}
+		
+		function getChar(event) {
+		  if (event.which == null) {
+			return String.fromCharCode(event.keyCode) // IE
+		  } else if (event.which!=0 && event.charCode!=0) {
+			return String.fromCharCode(event.which)   // the rest
+		  } else {
+			return null // special key
+		  }
+		}
+
 		function manageKey (event) {
-			var key = event.which,right;
+			var key = event.keyCode, right;
 			
 			switch( key ){
 				case AKEY: case CKEY: case VKEY: case ZKEY: case YKEY:
@@ -808,7 +823,7 @@
 					setCaretPosition($input[0],$input.val().length);
 				}
 			})
-			.on('keydown.xdsoft keypress.xdsoft input.xdsoft cut.xdsoft paste.xdsoft', function( event ){
+			.on('keydown.xdsoft input.xdsoft cut.xdsoft paste.xdsoft', function( event ){
 				var ret = manageKey(event);
 				
 				if (ret === false || ret === true) {
