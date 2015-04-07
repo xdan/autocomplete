@@ -1,5 +1,5 @@
 /**
- * @preserve jQuery Autocomplete plugin v1.2.3
+ * @preserve jQuery Autocomplete plugin v1.2.4
  * @homepage http://xdsoft.net/jqplugins/autocomplete/
  * @license MIT - MIT-LICENSE.txt
  * (c) 2014, Chupurnov Valeriy <chupurnov@gmail.com>
@@ -23,7 +23,7 @@
 		ZKEY = 90,
 		YKEY = 89,
 		defaultSetting = {},
-		currentInput = false,
+		//currentInput = false,
 		ctrlDown = false,
 		shiftDown = false,
 		interval_for_visibility,
@@ -449,6 +449,7 @@
 	};
 
 	defaultSetting = {
+		minLength: 0,
 		valueKey: 'value',
 		titleKey: 'title',
 		highlight: true,
@@ -462,7 +463,7 @@
 		style: false,
 
 		debug: true,
-		openOnFocus: true,
+		openOnFocus: false,
 		closeOnBlur: true,
 
 		autoselect: false,
@@ -665,24 +666,29 @@
 			})
 
 		function manageData(){
-			if( $input.val()!=currentValue ){
+			if ($input.val()!=currentValue){
 				currentValue = $input.val();
-			}else
+			} else {
 				return;
-
+			}
+			if (currentValue.length < options.minLength) {
+				$input.trigger('close.xdsoft');
+				return;
+			}
 			collectData.call(options,currentValue,dataset,function( query ){
-				if( query != currentValue )
+				if (query != currentValue) {
 					return;
+				}
 				var right;	
 				processData.call(options, dataset,query);
 
 				$input.trigger('updateContent.xdsoft');
 
-				if( options.showHint && currentValue.length && currentValue.length<=$input.prop('size') && (right = findRight.call(options,dataset,currentValue))  ){
+				if (options.showHint && currentValue.length && currentValue.length<=$input.prop('size') && (right = findRight.call(options,dataset,currentValue))) {
 					var title 	=  __safe.call(options,'getTitle',right.source,[right.right,right.source]);
-					title = /*'<span>'+*/query+/*'</span>'+*/title.substr(query.length);
-					$hint.val( title );
-				}else{
+					title = query + title.substr(query.length);
+					$hint.val(title);
+				} else {
 					$hint.val('');
 				}
 			});
@@ -793,7 +799,7 @@
 				$input
 					.trigger('close.xdsoft');
 				
-				currentInput = false;
+				//currentInput = false;
 				
 				active = $dropdown.find('div.active').eq(0);
 							
@@ -824,10 +830,6 @@
 				
 				if (ret === false || ret === true) {
 					return ret;
-				}
-				
-				if (!iOpen) {
-					$input.trigger('open.xdsoft');
 				}
 				
 				setTimeout(function(){
@@ -876,13 +878,13 @@
 					});
 					$dropdown.css($.extend(true,{
 						left:$input.position().left,
-						top:$input.position().top+parseInt($input.css('marginTop'))+parseInt($input[0].offsetHeight),
+						top:$input.position().top + parseInt($input.css('marginTop'))+parseInt($input[0].offsetHeight),
 						marginLeft:$input.css('marginLeft'),
 						marginRight:$input.css('marginRight'),
 						width:options.dropdownWidth=='100%'?$input[0].offsetWidth:options.dropdownWidth
 					},options.dropdownStyle));
 					
-					if( options.showHint ){
+					if (options.showHint) {
 						var style = getComputedStyle($input[0], "");
 						
 						$hint[0].style.cssText = style.cssText;
@@ -948,7 +950,7 @@
 						$box
 							.append($hint);
 					}
-				},options.timeoutUpdate||1);
+				}, options.timeoutUpdate||1);
 			});
 		
 		if ($input.is(':visible')) {
@@ -974,21 +976,23 @@
 		
 		$input	
 			.on('close.xdsoft',function(){
-				if( !iOpen )
+				if (!iOpen) {
 					return;
-					
+				}
+
 				$dropdown
 					.hide();
-				
-				$hint
-					.empty();	
 
-				if( !options.autoselect )
+				$hint
+					.val('');	
+
+				if (!options.autoselect) {
 					$input.val(currentValue);
-					
+				}
+
 				iOpen = false;
 
-				currentInput = false;
+				//currentInput = false;
 			})
 			
 			.on('updateContent.xdsoft',function(){
@@ -996,9 +1000,9 @@
 					hght = 10;
 				
 				if (out.length) {
-					$dropdown.show()
+					$input.trigger('open.xdsoft');
 				} else {
-					$dropdown.hide()
+					$input.trigger('close.xdsoft');
 					return;
 				}
 
@@ -1027,18 +1031,18 @@
 					return;
 				
 				$dropdown
-					.show()
+					.show();
 
 				iOpen = true;
 					
-				currentInput = $input;
+				//currentInput = $input;
 			})
 			.on('destroy.xdsoft',function(){
 				$input.removeClass('xdsoft');
 				$box.after($input);
 				$box.remove();
 				clearTimeout(timer1);
-				currentInput = false;
+				//currentInput = false;
 				$input.data('xdsoft_autocomplete',null);
 				$input
 					.off('.xdsoft')
