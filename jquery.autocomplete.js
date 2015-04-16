@@ -1,5 +1,5 @@
 /**
- * @preserve jQuery Autocomplete plugin v1.2.4
+ * @preserve jQuery Autocomplete plugin v1.2.5
  * @homepage http://xdsoft.net/jqplugins/autocomplete/
  * @license MIT - MIT-LICENSE.txt
  * (c) 2014, Chupurnov Valeriy <chupurnov@gmail.com>
@@ -939,14 +939,19 @@
 							background:$input.css('background')
 						},options.hintStyle));
 						
+						
 						if( olderBackground!==false ){
 							$hint.css('background',olderBackground);
 						}else{
 							olderBackground = $input.css('background');
 						}
 						
-						$input
-							.css('background','transparent')
+						try{
+							$input[0].style.setProperty('background', 'transparent', 'important');
+						} catch(e) {
+							$input.css('background','transparent')
+						}
+
 						$box
 							.append($hint);
 					}
