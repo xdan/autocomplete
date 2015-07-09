@@ -1,5 +1,5 @@
 /**
- * @preserve jQuery Autocomplete plugin v1.2.5
+ * @preserve jQuery Autocomplete plugin v1.2.6
  * @homepage http://xdsoft.net/jqplugins/autocomplete/
  * @license MIT - MIT-LICENSE.txt
  * (c) 2014, Chupurnov Valeriy <chupurnov@gmail.com>
@@ -554,8 +554,8 @@
 		
 		render: [
 			function (item, source, pid, query) {
-				var value = isset(item[this.get('valueKey', source)]) ? item[this.get('valueKey', source)] : item.toString(),
-					title = (isset(item[this.get('titleKey', source)]) ? item[this.get('titleKey', source)] : value) + '',
+				var value = __safe.call(this, "getValue", source, [item, source], defaultSetting.getValue[0].call(this, item, source)),
+					title = __safe.call(this, "getTitle", source, [item, source], defaultSetting.getTitle[0].call(this, item, source)),
 					_value = '',
 					_query = '',
 					_title = '',
