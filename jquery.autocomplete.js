@@ -807,6 +807,9 @@
 					active = $dropdown.children().first();
 					
 				$input.trigger('selected.xdsoft',[getItem(active,dataset)]);
+				
+				if (options.afterSelected)
+					options.afterSelected();
 			})
 			.on('timepick.xdsoft', function( event,_value ){
 				active = $dropdown.find('div.active');
@@ -823,8 +826,6 @@
 					$input.trigger('autocompleted.xdsoft',[getItem(active,dataset)]);
 					$hint.val('');
 					setCaretPosition($input[0],$input.val().length);
-					if (options.afterSelected)
-						options.afterSelected();
 				}
 			})
 			.on('keydown.xdsoft input.xdsoft cut.xdsoft paste.xdsoft', function( event ){
