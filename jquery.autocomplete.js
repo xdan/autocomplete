@@ -426,7 +426,7 @@
 			isset(dataset[$div.data('source')]) && 
 			isset(dataset[$div.data('source')][$div.data('pid')]) 
 		){
-			return dataset[$div.data('source')][$div.data('pid')]
+			return dataset[$div.data('source')][$div.data('pid')];
 		}
 		return false;
 	};
@@ -594,7 +594,9 @@
 			}
 		],
 		appendMethod: 'concat', // supported merge and replace 
-		source:[]
+		source:[],
+		afterSelected: function() {
+        }
 	};
 	function init( that,options ){
 		if( $(that).hasClass('xdsoft_input') )
@@ -791,13 +793,11 @@
 			.after($box)
 			.on('pick.xdsoft', function( event,_value ){
 
-				$input
-					.trigger('timepick.xdsoft',_value)
+				$input.trigger('timepick.xdsoft',_value);
 				
 				currentSelect = currentValue = $input.val();
 				
-				$input
-					.trigger('close.xdsoft');
+				$input.trigger('close.xdsoft');
 				
 				//currentInput = false;
 				
@@ -823,6 +823,8 @@
 					$input.trigger('autocompleted.xdsoft',[getItem(active,dataset)]);
 					$hint.val('');
 					setCaretPosition($input[0],$input.val().length);
+					if (options.afterSelected)
+						options.afterSelected();
 				}
 			})
 			.on('keydown.xdsoft input.xdsoft cut.xdsoft paste.xdsoft', function( event ){
