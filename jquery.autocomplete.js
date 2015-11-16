@@ -659,7 +659,7 @@
 				$dropdown.find('div').removeClass('active');
 				$(this).addClass('active');
 			})
-			.on('mousedown','div',function(){
+			.on('mousedown touchstart','div',function(){
 				$dropdown.find('div').removeClass('active');
 				$(this).addClass('active');
 				$input.trigger('pick.xdsoft');
