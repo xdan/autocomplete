@@ -274,7 +274,10 @@
 	};
 
 	function loadRemote( url,sourceObject,done,debug ){
-		$.ajax($.extend(true,{
+		 if (sourceObject.xhr) {
+			sourceObject.xhr.abort();
+		 }
+		 sourceObject.xhr = $.ajax($.extend(true,{
 			url : url,
 			type  : 'GET' ,
 			async:true,
