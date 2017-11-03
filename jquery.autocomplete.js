@@ -429,7 +429,7 @@
 			isset(dataset[$div.data('source')]) && 
 			isset(dataset[$div.data('source')][$div.data('pid')]) 
 		){
-			return dataset[$div.data('source')][$div.data('pid')]
+			return dataset[$div.data('source')][$div.data('pid')];
 		}
 		return false;
 	};
@@ -597,7 +597,9 @@
 			}
 		],
 		appendMethod: 'concat', // supported merge and replace 
-		source:[]
+		source:[],
+		afterSelected: function() {
+        }
 	};
 	function init( that,options ){
 		if( $(that).hasClass('xdsoft_input') )
@@ -838,13 +840,11 @@
 			.after($box)
 			.on('pick.xdsoft', function( event,_value ){
 
-				$input
-					.trigger('timepick.xdsoft',_value)
+				$input.trigger('timepick.xdsoft',_value);
 				
 				currentSelect = currentValue = $input.val();
 				
-				$input
-					.trigger('close.xdsoft');
+				$input.trigger('close.xdsoft');
 				
 				//currentInput = false;
 				
@@ -854,6 +854,9 @@
 					active = $dropdown.children().first();
 					
 				$input.trigger('selected.xdsoft',[getItem(active,dataset)]);
+				
+				if (options.afterSelected)
+					options.afterSelected();
 			})
 			.on('timepick.xdsoft', function( event,_value ){
 				active = $dropdown.find('div.active');
