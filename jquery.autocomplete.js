@@ -655,6 +655,9 @@
 			.addClass('xdsoft_input')
 			.attr('autocomplete','off');
 		
+		var xDown = null;
+		var yDown = null;
+		var isSwipe = false;
 		$dropdown
 			.on('mousemove','div',function(){
 				if( $(this).hasClass('active') )
@@ -662,11 +665,52 @@
 				$dropdown.find('div').removeClass('active');
 				$(this).addClass('active');
 			})
-			.on('mousedown touchstart','div',function(){
+			.on('mousedown','div',function(e){
 				$dropdown.find('div').removeClass('active');
 				$(this).addClass('active');
 				$input.trigger('pick.xdsoft');
 			})
+			.on('touchstart','div',function(e){
+				xDown = e.originalEvent.touches[0].clientX;
+				yDown = e.originalEvent.touches[0].clientY;
+			})
+			.on('touchend','div',function(e){
+				if(isSwipe === false) {
+					$dropdown.find('div').removeClass('active');
+					$(this).addClass('active');
+					$input.trigger('pick.xdsoft');
+				}
+
+				isSwipe = false;
+			})
+			.on('touchmove','div',function(e){
+				if ( ! xDown || ! yDown ) {
+					return;
+				}
+
+				var xUp = e.originalEvent.touches[0].clientX;
+				var yUp = e.originalEvent.touches[0].clientY;
+
+				var xDiff = xDown - xUp;
+				var yDiff = yDown - yUp;
+
+				if ( Math.abs( xDiff ) > Math.abs( yDiff ) ) {
+					if ( xDiff > 0 ) {
+						isSwipe = 'left';
+					} else {
+						isSwipe = 'right';
+					}
+				} else {
+					if ( yDiff > 0 ) {
+						isSwipe = 'top';
+					} else {
+						isSwipe = 'bottm';
+					}
+				}
+
+				xDown = null;
+				yDown = null;
+			});
 
 		function manageData(){
 			if ($input.val()!=currentValue){
