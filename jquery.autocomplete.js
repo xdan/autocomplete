@@ -26,7 +26,6 @@
 		//currentInput = false,
 		ctrlDown = false,
 		shiftDown = false,
-		interval_for_visibility,
 		publics = {},
 		accent_map = {
 			'ẚ':'a','Á':'a','á':'a','À':'a','à':'a','Ă':'a','ă':'a','Ắ':'a','ắ':'a','Ằ':'a','ằ':'a','Ẵ':'a','ẵ':'a','Ẳ':'a',
@@ -610,6 +609,7 @@
 			$hint = $('<input readonly class="xdsoft_autocomplete_hint"/>'),
 			$input = $(that),
 			timer1 = 0,
+			intervalForVisibility,
 			dataset = [],
 			iOpen	= false,
 			value = '',
@@ -1012,11 +1012,11 @@
 			$input
 				.trigger('updateHelperPosition.xdsoft');
 		} else {
-			interval_for_visibility = setInterval(function () {
+			intervalForVisibility = setInterval(function () {
 				if ($input.is(':visible')) {
 					$input
 						.trigger('updateHelperPosition.xdsoft');
-					clearInterval(interval_for_visibility);
+					clearInterval(intervalForVisibility);
 				}
 			},100);
 		}
@@ -1097,6 +1097,7 @@
 				$box.after($input);
 				$box.remove();
 				clearTimeout(timer1);
+				clearTimeout(intervalForVisibility);
 				//currentInput = false;
 				$input.data('xdsoft_autocomplete',null);
 				$input
