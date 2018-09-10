@@ -784,7 +784,14 @@
 				return true;
 				case ENTER:
 					if (iOpen) {
-						$input.trigger('pick.xdsoft');
+						if (options.autoselect) {
+							$input.trigger('pick.xdsoft');
+						} else if (!options.autoselect && active) {
+							$input.trigger('pick.xdsoft');
+						} else {
+							$input.trigger('close.xdsoft');
+							return true;
+						}
 						event.preventDefault();
 						return false;
 					} else {
